@@ -481,7 +481,11 @@ class TestGetFilingIndexBlackRock(unittest.TestCase):
         docs = get_filing_index(BLACKROCK_CIK, "0001364742-24-000010")
         self.assertEqual(len(docs), 1)
         self.assertEqual(docs[0]["filename"], "sc13ga.htm")
-        self.assertTrue(docs[0]["url"].startswith("https://www.sec.gov"))
+        expected_url = (
+            "https://www.sec.gov/Archives/edgar/data/1364742/"
+            "000136474224000010/sc13ga.htm"
+        )
+        self.assertEqual(docs[0]["url"], expected_url)
 
     @patch("edgar.retrieval.requests.get")
     def test_document_type_field(self, mock_get):
