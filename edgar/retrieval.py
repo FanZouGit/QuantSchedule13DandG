@@ -16,8 +16,8 @@ DEFAULT_HEADERS = {
     "Accept-Encoding": "gzip, deflate",
 }
 
-# Honour SEC rate limit: no more than 10 requests per second.
-REQUEST_DELAY = 0.15
+# Keep well within the SEC rate limit of 10 requests per second.
+REQUEST_DELAY = 0.1
 
 
 def _get(url, params=None):

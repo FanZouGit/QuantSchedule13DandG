@@ -89,6 +89,13 @@ def load_from_database(db_path=DB_PATH, table=_FILINGS_TABLE):
 
     conn = sqlite3.connect(db_path)
     try:
+        # Validate the table name against the SQLite master table to avoid injection.
+        cursor = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table,)
+        )
+        if cursor.fetchone() is None:
+            conn.close()
+            return pd.DataFrame()
         df = pd.read_sql(f"SELECT * FROM {table}", conn)  # noqa: S608
     except Exception:
         df = pd.DataFrame()

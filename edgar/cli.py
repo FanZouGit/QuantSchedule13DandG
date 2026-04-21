@@ -196,7 +196,7 @@ def build_parser():
     parse_p.set_defaults(func=cmd_parse)
 
     # ---- analyze ----
-    an_p = subparsers.add_parser("analyze", help="Analyse filings stored in the local database.")
+    an_p = subparsers.add_parser("analyze", help="Analyze filings stored in the local database.")
     an_p.add_argument("--db", default="filings.db",
                       help="SQLite database file (default: filings.db).")
     an_p.add_argument("--changes", action="store_true",
