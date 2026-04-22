@@ -186,6 +186,12 @@ MOCK_INDEX_HTML = """
   <tr>
     <td>1</td>
     <td>Schedule 13G/A</td>
+    <td><a href="/Archives/edgar/data/1364742/000136474224000010/sc13ga.xml">sc13ga.xml</a></td>
+    <td>SC 13G/A</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Schedule 13G/A (HTML)</td>
     <td><a href="/Archives/edgar/data/1364742/000136474224000010/sc13ga.htm">sc13ga.htm</a></td>
     <td>SC 13G/A</td>
   </tr>
@@ -479,11 +485,11 @@ class TestGetFilingIndexBlackRock(unittest.TestCase):
     def test_parses_single_document(self, mock_get):
         mock_get.return_value = _make_response(text=MOCK_INDEX_HTML)
         docs = get_filing_index(BLACKROCK_CIK, "0001364742-24-000010")
-        self.assertEqual(len(docs), 1)
-        self.assertEqual(docs[0]["filename"], "sc13ga.htm")
+        self.assertEqual(len(docs), 2)
+        self.assertEqual(docs[0]["filename"], "sc13ga.xml")
         expected_url = (
             "https://www.sec.gov/Archives/edgar/data/1364742/"
-            "000136474224000010/sc13ga.htm"
+            "000136474224000010/sc13ga.xml"
         )
         self.assertEqual(docs[0]["url"], expected_url)
 
@@ -538,9 +544,9 @@ class TestDownloadFilingBlackRock(unittest.TestCase):
         self.assertIn("NVIDIA Corporation", content)
 
     @patch("edgar.retrieval.requests.get")
-    def test_output_file_is_htm(self, mock_get):
+    def test_output_file_is_xml(self, mock_get):
         path, _ = self._run_download(mock_get, MOCK_FILING_HTML_APPLE_2024)
-        self.assertTrue(path.endswith(".htm"))
+        self.assertTrue(path.endswith(".xml"))
 
     @patch("edgar.retrieval.requests.get")
     def test_makes_two_requests(self, mock_get):

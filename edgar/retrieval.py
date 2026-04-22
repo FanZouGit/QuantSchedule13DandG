@@ -172,22 +172,33 @@ def download_filing(cik, accession_no, output_dir="filings"):
 
     documents = get_filing_index(cik, accession_no)
 
-    # Prefer the first .htm/.html file that looks like the primary form document.
+    # Prefer the first .xml file that looks like the primary form document.
     primary_doc_url = None
+    primary_doc_ext = ".xml"
     for doc in documents:
         fname = doc["filename"].lower()
-        if fname.endswith((".htm", ".html")):
+        if fname.endswith(".xml"):
             primary_doc_url = doc["url"]
             break
 
+    # Fall back to the first .htm/.html file if no .xml is found.
+    if not primary_doc_url:
+        for doc in documents:
+            fname = doc["filename"].lower()
+            if fname.endswith((".htm", ".html")):
+                primary_doc_url = doc["url"]
+                primary_doc_ext = ".htm"
+                break
+
     if not primary_doc_url and documents:
         primary_doc_url = documents[0]["url"]
+        primary_doc_ext = os.path.splitext(documents[0]["filename"])[1] or ".xml"
 
     if not primary_doc_url:
         raise ValueError(f"No primary document found for accession {accession_no}")
 
     resp = _get(primary_doc_url)
-    filename = os.path.join(output_dir, f"{accession_clean}.htm")
+    filename = os.path.join(output_dir, f"{accession_clean}{primary_doc_ext}")
     with open(filename, "w", encoding="utf-8", errors="replace") as f:
         f.write(resp.text)
 
