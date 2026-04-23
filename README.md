@@ -1,5 +1,76 @@
 # QuantSchedule13DandG
 
+## Getting Started
+
+### Prerequisites
+
+- Python 3.8 or higher
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/FanZouGit/QuantSchedule13DandG.git
+   cd QuantSchedule13DandG
+   ```
+
+2. **Create and activate a virtual environment**
+
+   ```bash
+   python -m venv .venv
+   # Linux / macOS
+   source .venv/bin/activate
+   # Windows
+   .venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Running the App
+
+The app is controlled through a CLI with four sub-commands: `search`, `download`, `parse`, and `analyze`.
+
+**Search for filings**
+
+```bash
+python main.py search "Berkshire Hathaway" --max-results 5
+python main.py search "Apple" --start-date 2023-01-01
+```
+
+**Download a specific filing by CIK and accession number**
+
+```bash
+python main.py download 1067983 0001193125-24-123456
+# Download, parse immediately, and save to the local database
+python main.py download 1067983 0001193125-24-123456 --parse --save-db
+```
+
+**Parse a locally saved filing**
+
+```bash
+python main.py parse filings/0001193125-24-123456.htm
+# Save parsed data to the local database
+python main.py parse filings/0001193125-24-123456.htm --save-db
+```
+
+**Analyze filings stored in the local database**
+
+```bash
+python main.py analyze --top 10
+python main.py analyze --top 10 --chart
+python main.py analyze --changes
+python main.py analyze --issuer "Apple" --chart
+```
+
+> **Tip:** Pass `--db <path>` to any command to use a custom SQLite database file (default: `filings.db`).
+
+---
+
 ## Development Plan
 
 ### 1. Define Project Requirements
