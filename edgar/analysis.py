@@ -154,8 +154,11 @@ def top_holders(df, n=10):
     if df.empty or "percent_owned" not in df.columns:
         return df
 
-    idx = df.groupby(["filer_name", "issuer_name"])["file_date"].idxmax()
-    latest = df.loc[idx].dropna(subset=["percent_owned"])
+    if "file_date" in df.columns:
+        idx = df.groupby(["filer_name", "issuer_name"])["file_date"].idxmax()
+        latest = df.loc[idx].dropna(subset=["percent_owned"])
+    else:
+        latest = df.dropna(subset=["percent_owned"])
     cols = [c for c in ("filer_name", "issuer_name", "percent_owned", "file_date", "form_type")
             if c in latest.columns]
     return latest.nlargest(n, "percent_owned")[cols]

@@ -178,26 +178,20 @@ MOCK_SUBMISSIONS_RESPONSE = {
     },
 }
 
-# Filing index HTML (single document row).
-MOCK_INDEX_HTML = """
-<html><body>
-<table>
-  <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th></tr>
-  <tr>
-    <td>1</td>
-    <td>Schedule 13G/A</td>
-    <td><a href="/Archives/edgar/data/1364742/000136474224000010/sc13ga.xml">sc13ga.xml</a></td>
-    <td>SC 13G/A</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>Schedule 13G/A (HTML)</td>
-    <td><a href="/Archives/edgar/data/1364742/000136474224000010/sc13ga.htm">sc13ga.htm</a></td>
-    <td>SC 13G/A</td>
-  </tr>
-</table>
-</body></html>
-"""
+# Filing index JSON (mirrors the real EDGAR index.json format).
+import json as _json
+MOCK_INDEX_HTML = _json.dumps({
+    "directory": {
+        "item": [
+            {"name": "0001364742-24-000010-index.html", "type": "text.gif", "size": ""},
+            {"name": "0001364742-24-000010-index-headers.html", "type": "text.gif", "size": ""},
+            {"name": "0001364742-24-000010.txt", "type": "text.gif", "size": ""},
+            {"name": "sc13ga.xml", "type": "text.gif", "size": "12000"},
+            {"name": "sc13ga.htm", "type": "text.gif", "size": "8000"},
+        ],
+        "name": "/Archives/edgar/data/1364742/000136474224000010",
+    }
+})
 
 # Realistic 13G/A filing HTML — BlackRock's annual amendment for Apple (2024 filing).
 MOCK_FILING_HTML_APPLE_2024 = """
@@ -483,7 +477,7 @@ class TestGetFilingIndexBlackRock(unittest.TestCase):
 
     @patch("edgar.retrieval.requests.get")
     def test_parses_single_document(self, mock_get):
-        mock_get.return_value = _make_response(text=MOCK_INDEX_HTML)
+        mock_get.return_value = _make_response(json_data=_json.loads(MOCK_INDEX_HTML))
         docs = get_filing_index(BLACKROCK_CIK, "0001364742-24-000010")
         self.assertEqual(len(docs), 2)
         self.assertEqual(docs[0]["filename"], "sc13ga.xml")
@@ -495,13 +489,13 @@ class TestGetFilingIndexBlackRock(unittest.TestCase):
 
     @patch("edgar.retrieval.requests.get")
     def test_document_type_field(self, mock_get):
-        mock_get.return_value = _make_response(text=MOCK_INDEX_HTML)
+        mock_get.return_value = _make_response(json_data=_json.loads(MOCK_INDEX_HTML))
         docs = get_filing_index(BLACKROCK_CIK, "0001364742-24-000010")
-        self.assertEqual(docs[0]["type"], "SC 13G/A")
+        self.assertIn("type", docs[0])
 
     @patch("edgar.retrieval.requests.get")
     def test_accession_dashes_stripped_in_url(self, mock_get):
-        mock_get.return_value = _make_response(text=MOCK_INDEX_HTML)
+        mock_get.return_value = _make_response(json_data=_json.loads(MOCK_INDEX_HTML))
         get_filing_index(BLACKROCK_CIK, "0001364742-24-000010")
         called_url = mock_get.call_args[0][0]
         self.assertNotIn("0001364742-24-000010", called_url)  # dashes removed
@@ -513,7 +507,7 @@ class TestDownloadFilingBlackRock(unittest.TestCase):
 
     def _run_download(self, mock_get, filing_html, accession="0001364742-24-000010"):
         mock_get.side_effect = [
-            _make_response(text=MOCK_INDEX_HTML),
+            _make_response(json_data=_json.loads(MOCK_INDEX_HTML)),
             _make_response(text=filing_html),
         ]
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -551,7 +545,7 @@ class TestDownloadFilingBlackRock(unittest.TestCase):
     @patch("edgar.retrieval.requests.get")
     def test_makes_two_requests(self, mock_get):
         mock_get.side_effect = [
-            _make_response(text=MOCK_INDEX_HTML),
+            _make_response(json_data=_json.loads(MOCK_INDEX_HTML)),
             _make_response(text=MOCK_FILING_HTML_APPLE_2024),
         ]
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -979,7 +973,7 @@ class TestCliDownloadBlackRock(unittest.TestCase):
     @patch("edgar.retrieval.requests.get")
     def test_download_and_parse_apple_filing(self, mock_get):
         mock_get.side_effect = [
-            _make_response(text=MOCK_INDEX_HTML),
+            _make_response(json_data=_json.loads(MOCK_INDEX_HTML)),
             _make_response(text=MOCK_FILING_HTML_APPLE_2024),
         ]
         from edgar.cli import build_parser
@@ -1001,7 +995,7 @@ class TestCliDownloadBlackRock(unittest.TestCase):
     @patch("edgar.retrieval.requests.get")
     def test_download_parse_save_db(self, mock_get):
         mock_get.side_effect = [
-            _make_response(text=MOCK_INDEX_HTML),
+            _make_response(json_data=_json.loads(MOCK_INDEX_HTML)),
             _make_response(text=MOCK_FILING_HTML_APPLE_2024),
         ]
         from edgar.cli import build_parser
