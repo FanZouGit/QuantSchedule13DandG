@@ -59,21 +59,47 @@ def _first_match(pattern, text, default=""):
     return m.group(1).strip() if m else default
 
 
-def parse_filing(content):
-    """Parse a 13D/13G filing HTML/text and extract key ownership data.
+def _tag_text(soup, *names):
+    """Return stripped text of the first matching tag (any of *names*)."""
+    for name in names:
+        tag = soup.find(name)
+        if tag and tag.get_text(strip=True):
+            return tag.get_text(strip=True)
+    return ""
 
-    The function converts the HTML to plain text and applies regex patterns
-    that match the standard SEC Schedule 13D/13G cover-page layout.
+
+def _parse_xml(content):
+    """Parse a structured EDGAR XML 13D/13G filing."""
+    soup = BeautifulSoup(content, "xml")
+    return {
+        "issuer_name": _tag_text(soup, "issuerName"),
+        "cusip": _tag_text(soup, "issuerCusipNumber"),
+        "class_of_securities": _tag_text(soup, "securitiesClassTitle"),
+        "filer_name": _tag_text(soup, "reportingPersonName"),
+        "citizenship": _tag_text(soup, "citizenshipOrOrganization"),
+        "aggregate_owned": _tag_text(
+            soup,
+            "reportingPersonBeneficiallyOwnedAggregateNumberOfShares",
+        ),
+        "percent_owned": _tag_text(soup, "classPercent"),
+    }
+
+
+def parse_filing(content):
+    """Parse a 13D/13G filing (XML or HTML) and extract key ownership data.
 
     Args:
-        content: HTML (or plain text) string of the filing document.
+        content: XML or HTML string of the filing document.
 
     Returns:
-        Dict with the following keys:
-            issuer_name, cusip, class_of_securities,
-            filer_name, citizenship, aggregate_owned, percent_owned.
+        Dict with keys: issuer_name, cusip, class_of_securities,
+        filer_name, citizenship, aggregate_owned, percent_owned.
         Values are strings; empty string means the field was not found.
     """
+    stripped = content.lstrip()
+    if stripped.startswith("<?xml") or "<edgarSubmission" in stripped[:200]:
+        return _parse_xml(content)
+
     soup = BeautifulSoup(content, "lxml")
     text = soup.get_text(separator="\n")
 

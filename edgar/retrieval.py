@@ -126,7 +126,7 @@ def get_filings_by_cik(cik, form_types=None):
 
 
 def get_filing_index(cik, accession_no):
-    """Fetch the filing index page and return the list of documents.
+    """Fetch the filing index and return the list of documents.
 
     Args:
         cik: Company CIK.
@@ -136,23 +136,23 @@ def get_filing_index(cik, accession_no):
         List of dicts with keys: seq, description, filename, url, type.
     """
     accession_clean = accession_no.replace("-", "")
-    url = f"{EDGAR_BASE_URL}/Archives/edgar/data/{cik}/{accession_clean}/"
-    resp = _get(url)
-    soup = BeautifulSoup(resp.text, "lxml")
+    base = f"{EDGAR_BASE_URL}/Archives/edgar/data/{cik}/{accession_clean}"
+    resp = _get(f"{base}/index.json")
+    items = resp.json().get("directory", {}).get("item", [])
 
     documents = []
-    for row in soup.select("table tr")[1:]:  # skip header row
-        cells = row.find_all("td")
-        if len(cells) >= 3:
-            link = cells[2].find("a", href=True)
-            if link:
-                documents.append({
-                    "seq": cells[0].get_text(strip=True),
-                    "description": cells[1].get_text(strip=True),
-                    "filename": link.get_text(strip=True),
-                    "url": f"{EDGAR_BASE_URL}{link['href']}",
-                    "type": cells[3].get_text(strip=True) if len(cells) > 3 else "",
-                })
+    for item in items:
+        name = item.get("name", "")
+        # Skip index/header meta-files
+        if name.endswith(("-index.html", "-index-headers.html", ".txt")):
+            continue
+        documents.append({
+            "seq": "",
+            "description": "",
+            "filename": name,
+            "url": f"{base}/{name}",
+            "type": item.get("type", ""),
+        })
     return documents
 
 
