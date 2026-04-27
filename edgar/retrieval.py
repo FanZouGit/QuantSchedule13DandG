@@ -67,14 +67,15 @@ def search_filings(query="", form_types=None, start_date=None, end_date=None, ma
         for hit in hits:
             src = hit.get("_source", {})
             ciks = src.get("ciks", [])
+            display_names = src.get("display_names", [])
             results.append({
-                "accession_no": src.get("accession_no", ""),
+                "accession_no": src.get("adsh", ""),
                 "cik": ciks[0] if ciks else "",
-                "entity_name": src.get("entity_name", ""),
-                "form_type": src.get("form_type", ""),
+                "entity_name": display_names[0] if display_names else "",
+                "form_type": src.get("form", ""),
                 "file_date": src.get("file_date", ""),
-                "period_of_report": src.get("period_of_report", ""),
-                "display_names": src.get("display_names", []),
+                "period_of_report": src.get("period_ending") or "",
+                "display_names": display_names,
             })
         params["from"] += len(hits)
         if len(hits) < params["size"]:
@@ -154,6 +155,40 @@ def get_filing_index(cik, accession_no):
             "type": item.get("type", ""),
         })
     return documents
+
+
+_FORM_TYPE_MAP = {
+    "13D": ["SC 13D", "SC 13D/A"],
+    "13G": ["SC 13G", "SC 13G/A"],
+    "both": ["SC 13D", "SC 13D/A", "SC 13G", "SC 13G/A"],
+}
+
+
+def download_all_filings(cik, form_type="both", output_dir="filings"):
+    """Download all 13D/13G filings for a CIK.
+
+    Args:
+        cik: Company CIK (integer or string).
+        form_type: One of '13D', '13G', or 'both' (default).
+        output_dir: Directory to save filings.  Created if it does not exist.
+
+    Returns:
+        List of dicts with keys 'accession_no', 'form_type', 'file_date', 'path',
+        and 'error' (None on success).
+    """
+    form_type = form_type.upper() if form_type.upper() in ("13D", "13G") else "both"
+    form_types = _FORM_TYPE_MAP[form_type]
+
+    filings = get_filings_by_cik(cik, form_types=form_types)
+    results = []
+    for filing in filings:
+        acc = filing["accession_no"]
+        try:
+            path = download_filing(cik, acc, output_dir=output_dir)
+            results.append({**filing, "path": path, "error": None})
+        except Exception as exc:
+            results.append({**filing, "path": None, "error": str(exc)})
+    return results
 
 
 def download_filing(cik, accession_no, output_dir="filings"):

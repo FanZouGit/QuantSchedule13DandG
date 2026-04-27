@@ -43,115 +43,105 @@ _FIVE_YEAR_HITS = [
     # 2021 filings
     {
         "_source": {
-            "accession_no": "0001364742-21-000010",
+            "adsh": "0001364742-21-000010",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Apple Inc.",
-            "form_type": "SC 13G",
+            "form": "SC 13G",
             "file_date": "2021-02-05",
-            "period_of_report": "2020-12-31",
+            "period_ending": "2020-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     {
         "_source": {
-            "accession_no": "0001364742-21-000020",
+            "adsh": "0001364742-21-000020",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Microsoft Corporation",
-            "form_type": "SC 13G",
+            "form": "SC 13G",
             "file_date": "2021-02-08",
-            "period_of_report": "2020-12-31",
+            "period_ending": "2020-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     # 2022 filings
     {
         "_source": {
-            "accession_no": "0001364742-22-000010",
+            "adsh": "0001364742-22-000010",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Apple Inc.",
-            "form_type": "SC 13G/A",
+            "form": "SC 13G/A",
             "file_date": "2022-02-04",
-            "period_of_report": "2021-12-31",
+            "period_ending": "2021-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     {
         "_source": {
-            "accession_no": "0001364742-22-000030",
+            "adsh": "0001364742-22-000030",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Tesla, Inc.",
-            "form_type": "SC 13G",
+            "form": "SC 13G",
             "file_date": "2022-02-10",
-            "period_of_report": "2021-12-31",
+            "period_ending": "2021-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     # 2023 filings
     {
         "_source": {
-            "accession_no": "0001364742-23-000010",
+            "adsh": "0001364742-23-000010",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Apple Inc.",
-            "form_type": "SC 13G/A",
+            "form": "SC 13G/A",
             "file_date": "2023-02-03",
-            "period_of_report": "2022-12-31",
+            "period_ending": "2022-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     {
         "_source": {
-            "accession_no": "0001364742-23-000040",
+            "adsh": "0001364742-23-000040",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Exxon Mobil Corporation",
-            "form_type": "SC 13D",
+            "form": "SC 13D",
             "file_date": "2023-05-15",
-            "period_of_report": "2023-05-10",
+            "period_ending": "2023-05-10",
             "display_names": [BLACKROCK_NAME],
         }
     },
     # 2024 filings
     {
         "_source": {
-            "accession_no": "0001364742-24-000010",
+            "adsh": "0001364742-24-000010",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Apple Inc.",
-            "form_type": "SC 13G/A",
+            "form": "SC 13G/A",
             "file_date": "2024-02-01",
-            "period_of_report": "2023-12-31",
+            "period_ending": "2023-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     {
         "_source": {
-            "accession_no": "0001364742-24-000050",
+            "adsh": "0001364742-24-000050",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "NVIDIA Corporation",
-            "form_type": "SC 13G",
+            "form": "SC 13G",
             "file_date": "2024-02-13",
-            "period_of_report": "2023-12-31",
+            "period_ending": "2023-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     # 2025 filings
     {
         "_source": {
-            "accession_no": "0001364742-25-000010",
+            "adsh": "0001364742-25-000010",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Apple Inc.",
-            "form_type": "SC 13G/A",
+            "form": "SC 13G/A",
             "file_date": "2025-02-04",
-            "period_of_report": "2024-12-31",
+            "period_ending": "2024-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
     {
         "_source": {
-            "accession_no": "0001364742-25-000060",
+            "adsh": "0001364742-25-000060",
             "ciks": [BLACKROCK_CIK],
-            "entity_name": "Amazon.com, Inc.",
-            "form_type": "SC 13G",
+            "form": "SC 13G",
             "file_date": "2025-02-07",
-            "period_of_report": "2024-12-31",
+            "period_ending": "2024-12-31",
             "display_names": [BLACKROCK_NAME],
         }
     },
@@ -165,12 +155,12 @@ MOCK_SUBMISSIONS_RESPONSE = {
     "name": BLACKROCK_NAME,
     "filings": {
         "recent": {
-            "form": [h["_source"]["form_type"] for h in _FIVE_YEAR_HITS] + ["10-K"],
-            "accessionNumber": [h["_source"]["accession_no"] for h in _FIVE_YEAR_HITS]
+            "form": [h["_source"]["form"] for h in _FIVE_YEAR_HITS] + ["10-K"],
+            "accessionNumber": [h["_source"]["adsh"] for h in _FIVE_YEAR_HITS]
                                + ["0001364742-25-000099"],
             "filingDate": [h["_source"]["file_date"] for h in _FIVE_YEAR_HITS]
                          + ["2025-04-01"],
-            "reportDate": [h["_source"]["period_of_report"] for h in _FIVE_YEAR_HITS]
+            "reportDate": [h["_source"]["period_ending"] for h in _FIVE_YEAR_HITS]
                          + ["2024-12-31"],
             "primaryDocument": [f"doc{i}.htm" for i in range(len(_FIVE_YEAR_HITS))]
                                + ["10k.htm"],
@@ -387,7 +377,7 @@ class TestSearchFilingsBlackRock(unittest.TestCase):
     @patch("edgar.retrieval.requests.get")
     def test_only_13d_form_type_filter(self, mock_get):
         # Return only the SC 13D hit
-        sc13d_hits = [h for h in _FIVE_YEAR_HITS if h["_source"]["form_type"] == "SC 13D"]
+        sc13d_hits = [h for h in _FIVE_YEAR_HITS if h["_source"]["form"] == "SC 13D"]
         mock_get.return_value = _make_response(
             json_data={"hits": {"hits": sc13d_hits}}
         )
@@ -399,7 +389,7 @@ class TestSearchFilingsBlackRock(unittest.TestCase):
     @patch("edgar.retrieval.requests.get")
     def test_only_13g_form_type_filter(self, mock_get):
         sc13g_hits = [h for h in _FIVE_YEAR_HITS
-                      if h["_source"]["form_type"] in ("SC 13G", "SC 13G/A")]
+                      if h["_source"]["form"] in ("SC 13G", "SC 13G/A")]
         mock_get.return_value = _make_response(
             json_data={"hits": {"hits": sc13g_hits}}
         )
