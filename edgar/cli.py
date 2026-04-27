@@ -13,7 +13,7 @@ import json
 import os
 import sys
 
-from .retrieval import search_filings, get_filings_by_cik, download_filing
+from .retrieval import search_filings, get_filings_by_cik, download_filing, download_all_filings
 from .parser import parse_filing
 from .analysis import (
     build_dataframe,
@@ -85,6 +85,46 @@ def cmd_download(args):
     except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
+
+
+def cmd_download_all(args):
+    """Handle the *download-all* sub-command."""
+    print(f"Fetching all SC {args.form_type.upper()} filings for CIK {args.cik} …")
+    results = download_all_filings(args.cik, form_type=args.form_type, output_dir=args.output_dir)
+
+    if not results:
+        print("No matching filings found for this CIK.")
+        return
+
+    ok = [r for r in results if r["error"] is None]
+    failed = [r for r in results if r["error"] is not None]
+    print(f"Downloaded {len(ok)} filing(s); {len(failed)} error(s).")
+
+    all_parsed = []
+    for r in results:
+        status = "OK" if r["error"] is None else f"ERROR: {r['error']}"
+        print(f"  {r['form_type']}  {r['file_date']}  {r['accession_no']}  {status}")
+
+        if r["error"] is None and (args.parse or args.save_db):
+            try:
+                with open(r["path"], "r", encoding="utf-8", errors="replace") as fh:
+                    content = fh.read()
+                data = parse_filing(content)
+                data.update({"cik": args.cik, "accession_no": r["accession_no"]})
+                all_parsed.append(data)
+            except Exception as exc:
+                print(f"    Parse error: {exc}", file=sys.stderr)
+
+    if args.parse:
+        for data in all_parsed:
+            print(f"\nParsed: {data.get('accession_no', '')}")
+            for k, v in data.items():
+                print(f"  {k}: {v or '(not found)'}")
+
+    if args.save_db and all_parsed:
+        df = build_dataframe(all_parsed)
+        save_to_database(df, db_path=args.db)
+        print(f"\nSaved {len(all_parsed)} record(s) to database: {args.db}")
 
 
 def cmd_parse(args):
@@ -183,6 +223,27 @@ def build_parser():
     dl_p.add_argument("--db", default="filings.db",
                       help="SQLite database file (default: filings.db).")
     dl_p.set_defaults(func=cmd_download)
+
+    # ---- download-all ----
+    da_p = subparsers.add_parser(
+        "download-all",
+        help="Download all 13D/13G filings for a CIK.",
+    )
+    da_p.add_argument("cik", help="Company CIK number.")
+    da_p.add_argument(
+        "--form-type", dest="form_type", default="both",
+        choices=["13D", "13G", "both"],
+        help="Form type to download: '13D', '13G', or 'both' (default: both, includes amendments).",
+    )
+    da_p.add_argument("--output-dir", dest="output_dir", default="filings",
+                      help="Directory to save filings (default: filings/).")
+    da_p.add_argument("--parse", action="store_true",
+                      help="Parse each downloaded filing immediately.")
+    da_p.add_argument("--save-db", dest="save_db", action="store_true",
+                      help="Save parsed data to the local database.")
+    da_p.add_argument("--db", default="filings.db",
+                      help="SQLite database file (default: filings.db).")
+    da_p.set_defaults(func=cmd_download_all)
 
     # ---- parse ----
     parse_p = subparsers.add_parser("parse", help="Parse a locally saved filing HTML file.")
