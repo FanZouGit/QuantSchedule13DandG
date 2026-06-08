@@ -137,7 +137,10 @@ def get_filing_index(cik, accession_no):
         List of dicts with keys: seq, description, filename, url, type.
     """
     accession_clean = accession_no.replace("-", "")
-    base = f"{EDGAR_BASE_URL}/Archives/edgar/data/{cik}/{accession_clean}"
+    # EDGAR archives filings under the filer's CIK, which is encoded in the
+    # first segment of the accession number — not necessarily the subject CIK.
+    filer_cik = str(int(accession_no.split("-")[0]))
+    base = f"{EDGAR_BASE_URL}/Archives/edgar/data/{filer_cik}/{accession_clean}"
     resp = _get(f"{base}/index.json")
     items = resp.json().get("directory", {}).get("item", [])
 
